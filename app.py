@@ -8,8 +8,9 @@ import numpy as np
 
 # --- Page Configuration ---
 st.set_page_config(
-    page_title="DiPi-The Demand Planner Assistant",
-    page_icon="📊",
+    # ⭐️ CHANGE: Updated browser tab title
+    page_title="DiPi Assistant",
+    page_icon="💡",
     layout="wide"
 )
 
@@ -25,10 +26,7 @@ def transform_data(df):
     df_long['sales_type'] = df_long['sales_type'].str.title()
     df_long['date_str'] = df_long['date_str'].astype(str)
     
-    # Use Pandas's automatic date parsing.
     df_long['date'] = pd.to_datetime(df_long['date_str'], errors='coerce')
-    
-    # Drop rows where date parsing might have failed
     df_long.dropna(subset=['date'], inplace=True)
 
     df_long['date'] = df_long['date'].dt.date
@@ -36,8 +34,9 @@ def transform_data(df):
     return final_df
 
 # --- App Title and Description ---
-st.title("📊 DiPi-The Demand Planner Assistant")
-st.write("DO NOT Upload your sales data (in wide format) to get insights, visualizations, and a sales forecast.")
+# ⭐️ CHANGE: Updated main app title
+st.title("DiPi - The Demand Planning Assistant")
+st.write("Upload your sales data (in wide format) to get insights, visualizations, and a sales forecast.")
 
 # --- File Uploader ---
 uploaded_file = st.file_uploader("Choose a CSV or Excel file", type=['csv', 'xlsx'])
@@ -94,8 +93,6 @@ if uploaded_file is not None:
         
         st.markdown("---")
         st.subheader("Overall Total Metrics (All SKUs)")
-
-        # ⭐️ CHANGE: Wrap the overall metrics in a bordered container
         with st.container(border=True):
             total_units_sold = int(data['units_sold'].sum())
             total_promo_sales = int(data[data['sales_type'] == 'Promo Sales']['units_sold'].sum())
