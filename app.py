@@ -8,12 +8,12 @@ import numpy as np
 
 # --- Page Configuration ---
 st.set_page_config(
-    page_title="DiPi - The Demand Planning Assistant",
-    page_icon="📊",
+    page_title="DiPi Assistant",
+    page_icon="💡",
     layout="wide"
 )
 
-# --- CORRECTED Data Transformation Function ---
+# --- Data Transformation Function ---
 def transform_data(df):
     """
     Transforms a dataframe with a two-level header into a tidy, long format.
@@ -23,10 +23,9 @@ def transform_data(df):
     df_long = df_series.reset_index()
     df_long.columns = ['sku', 'description', 'sales_type', 'date_str', 'units_sold']
     df_long['sales_type'] = df_long['sales_type'].str.title()
-    
-    # ⭐️ FIX: Reverted to Pandas's robust, automatic date parsing.
-    # This handles multiple formats like '24-Jun', '2024', and '2024-06-01' correctly.
     df_long['date_str'] = df_long['date_str'].astype(str)
+    
+    # Use Pandas's automatic date parsing. This is the most robust method.
     df_long['date'] = pd.to_datetime(df_long['date_str'], errors='coerce')
     
     # Drop rows where a date could not be parsed
@@ -52,7 +51,8 @@ if uploaded_file is not None:
         
         data = transform_data(raw_data)
         
-        data['sku_desc'] = data['sku'].astype(str) + ' - ' + data['description']
+        # ⭐️ FIX: Convert both sku and description to string before concatenating
+        data['sku_desc'] = data['sku'].astype(str) + ' - ' + data['description'].astype(str)
         
         data['month_year'] = pd.to_datetime(data['date']).dt.to_period('M').astype(str)
         st.success("Data loaded and transformed successfully!")
