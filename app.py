@@ -37,7 +37,7 @@ def transform_data(df):
 
 # --- App Title and Description ---
 st.title("📊 DiPi-The Demand Planner Assistant")
-st.write("Upload your sales data (in wide format) to get insights, visualizations, and a sales forecast.")
+st.write("DO NOT Upload your sales data (in wide format) to get insights, visualizations, and a sales forecast.")
 
 # --- File Uploader ---
 uploaded_file = st.file_uploader("Choose a CSV or Excel file", type=['csv', 'xlsx'])
