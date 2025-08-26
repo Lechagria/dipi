@@ -51,7 +51,7 @@ if uploaded_file is not None:
         
         data = transform_data(raw_data)
         
-        # ⭐️ FIX: Convert both sku and description to string before concatenating
+        # ⭐️ FIX: Convert description to string to allow numbers and special characters
         data['sku_desc'] = data['sku'].astype(str) + ' - ' + data['description'].astype(str)
         
         data['month_year'] = pd.to_datetime(data['date']).dt.to_period('M').astype(str)
@@ -72,6 +72,7 @@ if uploaded_file is not None:
 
     with tab1:
         st.subheader("Key Performance Indicators")
+
         for index, row in sku_desc_pairs.iterrows():
             sku, description = row['sku'], row['description']
             st.markdown(f"#### {sku} - {description}")
@@ -94,17 +95,18 @@ if uploaded_file is not None:
         
         st.markdown("---")
         st.subheader("Overall Total Metrics (All SKUs)")
-        with st.container(border=True):
-            total_units_sold = int(data['units_sold'].sum())
-            total_promo_sales = int(data[data['sales_type'] == 'Promo Sales']['units_sold'].sum())
-            total_regular_sales = total_units_sold - total_promo_sales
-            promo_percentage = (total_promo_sales / total_units_sold) * 100 if total_units_sold > 0 else 0
-            
-            col1_total, col2_total, col3_total, col4_total = st.columns(4)
-            col1_total.metric("Total Units Sold", f"{total_units_sold:,}")
-            col2_total.metric("Regular Units Sold", f"{total_regular_sales:,}")
-            col3_total.metric("Total Promotion Units", f"{total_promo_sales:,}")
-            col4_total.metric("Promotion % of Sales", f"{promo_percentage:.2f}%")
+        
+        # ⭐️ CHANGE: Removed the st.container(border=True) wrapper from this section
+        total_units_sold = int(data['units_sold'].sum())
+        total_promo_sales = int(data[data['sales_type'] == 'Promo Sales']['units_sold'].sum())
+        total_regular_sales = total_units_sold - total_promo_sales
+        promo_percentage = (total_promo_sales / total_units_sold) * 100 if total_units_sold > 0 else 0
+        
+        col1_total, col2_total, col3_total, col4_total = st.columns(4)
+        col1_total.metric("Total Units Sold", f"{total_units_sold:,}")
+        col2_total.metric("Regular Units Sold", f"{total_regular_sales:,}")
+        col3_total.metric("Total Promotion Units", f"{total_promo_sales:,}")
+        col4_total.metric("Promotion % of Sales", f"{promo_percentage:.2f}%")
         
         st.markdown("---")
         st.subheader("Monthly Performance Highlights")
