@@ -8,8 +8,8 @@ import numpy as np
 
 # --- Page Configuration ---
 st.set_page_config(
-    page_title="DiPi Assistant",
-    page_icon="💡",
+    page_title="Demand Planning Assistant",
+    page_icon="📊",
     layout="wide"
 )
 
@@ -25,10 +25,8 @@ def transform_data(df):
     df_long['sales_type'] = df_long['sales_type'].str.title()
     df_long['date_str'] = df_long['date_str'].astype(str)
     
-    # Use Pandas's automatic date parsing. This is the most robust method.
+    # Use Pandas's automatic date parsing.
     df_long['date'] = pd.to_datetime(df_long['date_str'], errors='coerce')
-    
-    # Drop rows where a date could not be parsed
     df_long.dropna(subset=['date'], inplace=True)
 
     df_long['date'] = df_long['date'].dt.date
@@ -36,7 +34,7 @@ def transform_data(df):
     return final_df
 
 # --- App Title and Description ---
-st.title("DiPi - The Demand Planning Assistant")
+st.title("📊 Demand Planning Assistant")
 st.write("Upload your sales data (in wide format) to get insights, visualizations, and a sales forecast.")
 
 # --- File Uploader ---
@@ -72,7 +70,6 @@ if uploaded_file is not None:
 
     with tab1:
         st.subheader("Key Performance Indicators")
-
         for index, row in sku_desc_pairs.iterrows():
             sku, description = row['sku'], row['description']
             st.markdown(f"#### {sku} - {description}")
@@ -95,8 +92,6 @@ if uploaded_file is not None:
         
         st.markdown("---")
         st.subheader("Overall Total Metrics (All SKUs)")
-        
-        # ⭐️ CHANGE: Removed the st.container(border=True) wrapper from this section
         total_units_sold = int(data['units_sold'].sum())
         total_promo_sales = int(data[data['sales_type'] == 'Promo Sales']['units_sold'].sum())
         total_regular_sales = total_units_sold - total_promo_sales
@@ -178,7 +173,6 @@ if uploaded_file is not None:
             chart_data = data[data['sales_type'] == 'Promo Sales']
 
         fig_time = px.line(chart_data, x='date', y='units_sold', color='sku_desc', title=f'{sales_type_filter} Over Time')
-        fig_time.update_yaxes(nticks=5)
         st.plotly_chart(fig_time, use_container_width=True)
         
         st.markdown("---")
@@ -213,13 +207,6 @@ if uploaded_file is not None:
             st.info("The dataset must contain at least 2 different years of data to generate a heatmap.")
 
     with tab3:
-        with st.expander("ℹ️ What is Prophet?"):
-            st.write("""
-            Prophet is a powerful and user-friendly forecasting tool developed by Meta (Facebook). 
-            It is specifically designed for business time-series data, which often has strong seasonal effects (e.g., weekly, yearly) and holidays. 
-            It's robust to missing data and shifts in trends, often producing high-quality forecasts without requiring expert knowledge.
-            """)
-        
         st.subheader("Configure Your Forecast")
         col1, col2 = st.columns(2)
         with col1:
@@ -280,42 +267,15 @@ if uploaded_file is not None:
             model = st.session_state.prophet_model
             forecast_to_show = st.session_state.forecast_df
             
-            granularity = st.radio(
-                "Select forecast table view:",
-                ['Every 15 Days', 'Monthly'],
-                horizontal=True,
-                key='granularity_selector'
-            )
+            st.write("Forecast Data (sampled every 15 days)")
             future_forecast = forecast_to_show[forecast_to_show['ds'] > pd.to_datetime(data['date'].max())]
-            
-            if granularity == 'Every 15 Days':
-                sampled_forecast = future_forecast.iloc[::15]
-            else: # Monthly
-                sampled_forecast = future_forecast.set_index('ds').resample('MS').first().reset_index()
+            st.dataframe(future_forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].iloc[::15])
 
-            display_df = sampled_forecast.copy()
-            display_df['ds'] = pd.to_datetime(display_df['ds']).dt.date
-            numeric_cols = ['yhat', 'yhat_lower', 'yhat_upper']
-            display_df[numeric_cols] = display_df[numeric_cols].round(0).astype(int)
-            display_df = display_df.rename(columns={
-                'ds': 'Date', 'yhat': 'Forecast', 'yhat_lower': 'Low Estimate', 'yhat_upper': 'High Estimate'
-            })
-            
-            st.write(f"Forecast Data ({granularity})")
-            st.dataframe(display_df[['Date', 'Forecast', 'Low Estimate', 'High Estimate']])
-            
             st.write("Forecast Visualization")
             fig_forecast = plot_plotly(model, forecast_to_show)
             st.plotly_chart(fig_forecast, use_container_width=True)
-            
             st.write("Forecast Components")
             fig_components = plot_components_plotly(model, forecast_to_show)
-            
-            trend_min = forecast_to_show['trend'].min()
-            trend_max = forecast_to_show['trend'].max()
-            padding = (trend_max - trend_min) * 0.20
-            fig_components.update_layout(yaxis_range=[trend_min - padding, trend_max + padding])
-            
             st.plotly_chart(fig_components, use_container_width=True)
         else:
             st.info("Click the button above to generate a forecast.")
@@ -340,3 +300,5 @@ if uploaded_file is not None:
             )
         else:
             st.warning("You must generate a forecast in the 'Forecasting' tab before you can download it.")
+
+
