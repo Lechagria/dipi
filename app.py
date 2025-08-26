@@ -8,13 +8,12 @@ import numpy as np
 
 # --- Page Configuration ---
 st.set_page_config(
-    # ⭐️ CHANGE: Updated browser tab title
-    page_title="DiPi Assistant",
-    page_icon="💡",
+    page_title="DiPi - The Demand Planning Assistant",
+    page_icon="📊",
     layout="wide"
 )
 
-# --- Data Transformation Function ---
+# --- CORRECTED Data Transformation Function ---
 def transform_data(df):
     """
     Transforms a dataframe with a two-level header into a tidy, long format.
@@ -24,9 +23,13 @@ def transform_data(df):
     df_long = df_series.reset_index()
     df_long.columns = ['sku', 'description', 'sales_type', 'date_str', 'units_sold']
     df_long['sales_type'] = df_long['sales_type'].str.title()
-    df_long['date_str'] = df_long['date_str'].astype(str)
     
+    # ⭐️ FIX: Reverted to Pandas's robust, automatic date parsing.
+    # This handles multiple formats like '24-Jun', '2024', and '2024-06-01' correctly.
+    df_long['date_str'] = df_long['date_str'].astype(str)
     df_long['date'] = pd.to_datetime(df_long['date_str'], errors='coerce')
+    
+    # Drop rows where a date could not be parsed
     df_long.dropna(subset=['date'], inplace=True)
 
     df_long['date'] = df_long['date'].dt.date
@@ -34,7 +37,6 @@ def transform_data(df):
     return final_df
 
 # --- App Title and Description ---
-# ⭐️ CHANGE: Updated main app title
 st.title("DiPi - The Demand Planning Assistant")
 st.write("Upload your sales data (in wide format) to get insights, visualizations, and a sales forecast.")
 
@@ -70,7 +72,6 @@ if uploaded_file is not None:
 
     with tab1:
         st.subheader("Key Performance Indicators")
-
         for index, row in sku_desc_pairs.iterrows():
             sku, description = row['sku'], row['description']
             st.markdown(f"#### {sku} - {description}")
