@@ -47,9 +47,11 @@ if uploaded_file is not None:
         else:
             raw_data = pd.read_excel(uploaded_file, header=[0, 1])
         
+        # ⭐️ FIX: Remove any completely empty columns to handle format variations
+        raw_data = raw_data.dropna(axis=1, how='all')
+        
         data = transform_data(raw_data)
         
-        # ⭐️ FIX: Convert description to string to allow numbers and special characters
         data['sku_desc'] = data['sku'].astype(str) + ' - ' + data['description'].astype(str)
         
         data['month_year'] = pd.to_datetime(data['date']).dt.to_period('M').astype(str)
@@ -300,5 +302,7 @@ if uploaded_file is not None:
             )
         else:
             st.warning("You must generate a forecast in the 'Forecasting' tab before you can download it.")
+
+
 
 
