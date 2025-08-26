@@ -8,7 +8,7 @@ import numpy as np
 
 # --- Page Configuration ---
 st.set_page_config(
-    page_title="Demand Planning Assistant",
+    page_title="DiPi - The Demand Planning Assistant",
     page_icon="📊",
     layout="wide"
 )
@@ -34,7 +34,7 @@ def transform_data(df):
     return final_df
 
 # --- App Title and Description ---
-st.title("📊 Demand Planning Assistant")
+st.title("📊 DiPi - The Demand Planning Assistant")
 st.write("Upload your sales data (in wide format) to get insights, visualizations, and a sales forecast.")
 
 # --- File Uploader ---
@@ -302,6 +302,7 @@ if uploaded_file is not None:
             )
         else:
             st.warning("You must generate a forecast in the 'Forecasting' tab before you can download it.")
+
 
 
 
